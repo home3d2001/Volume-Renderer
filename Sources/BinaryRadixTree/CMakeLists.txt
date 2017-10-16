@@ -1,0 +1,11 @@
+# set (BinaryRadixTree_SRC 
+# 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+# 	${CMAKE_CURRENT_SOURCE_DIR}/BrtNode.h 
+# 	${CMAKE_CURRENT_SOURCE_DIR}/BuildBRT.h 
+# 	${CMAKE_CURRENT_SOURCE_DIR}/BuildBRT.hpp
+# 	${CMAKE_CURRENT_SOURCE_DIR}/BuildBRT.cl 
+# 	PARENT_SCOPE)
+
+# set(BinaryRadixTree_KRNL
+# 	${CMAKE_CURRENT_SOURCE_DIR}/BuildBRT.cl
+# 	PARENT_SCOPE)

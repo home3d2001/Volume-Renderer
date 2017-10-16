@@ -1,0 +1,158 @@
+/* Kernels defined in BuildBRT.cl */
+#pragma once
+
+#include "clfw.hpp"
+#include "BuildBRT.h"
+
+inline cl_int BuildBinaryRadixTree_p(
+	cl::Buffer &zpoints_i,
+	cl_int totalUniquePoints,
+	cl_int mbits,
+	std::string uniqueString,
+	cl::Buffer &internalBRTNodes_o
+) {
+	cl::Kernel &kernel = CLFW::Kernels["BuildBinaryRadixTreeKernel"];
+	cl::CommandQueue &queue = CLFW::DefaultQueue;
+	cl_int globalSize = CLFW::NextPow2(totalUniquePoints);
+	bool isOld;
+	cl::Buffer zeroBRTNodes;
+	cl_int error = CLFW::getBuffer(internalBRTNodes_o, uniqueString + "brt", sizeof(BrtNode)* (globalSize));
+	error |= CLFW::getBuffer(zeroBRTNodes, uniqueString + "brtzero", sizeof(BrtNode)* (globalSize), isOld);
+	if (!isOld) {
+		BrtNode b = { 0 };
+		queue.enqueueFillBuffer<BrtNode>(zeroBRTNodes, { b }, 0, sizeof(BrtNode) * globalSize);
+	}
+	error |= queue.enqueueCopyBuffer(zeroBRTNodes, internalBRTNodes_o, 0, 0, sizeof(BrtNode)* (globalSize));
+	error |= kernel.setArg(0, internalBRTNodes_o);
+	error |= kernel.setArg(1, zpoints_i);
+	error |= kernel.setArg(2, mbits);
+	error |= kernel.setArg(3, totalUniquePoints);
+	error |= queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(globalSize), cl::NullRange);
+
+	return error;
+}
+
+inline cl_int BuildBinaryRadixTree_s(
+	std::vector<big> &zpoints, 
+	cl_int mbits, 
+	std::vector<BrtNode> &internalBRTNodes) 
+{
+	internalBRTNodes.resize(zpoints.size() - 1);
+
+	for (int i = 0; i < zpoints.size() - 1; ++i) {
+		BuildBinaryRadixTree(internalBRTNodes.data(), nullptr, zpoints.data(), nullptr, mbits, zpoints.size(), false, i);
+	}
+
+	return CL_SUCCESS;
+}
+
+inline cl_int BuildColoredBinaryRadixTree_p(
+	cl::Buffer &zpoints_i,
+	cl::Buffer  &pointColors_i,
+	cl_int totalUniquePoints,
+	cl_int mbits,
+	std::string uniqueString,
+	cl::Buffer  &brt_o,
+	cl::Buffer  &brtColors_o)
+{
+	cl::Kernel &kernel = CLFW::Kernels["BuildColoredBinaryRadixTreeKernel"];
+	cl::CommandQueue &queue = CLFW::DefaultQueue;
+	cl_int globalSize = CLFW::NextPow2(totalUniquePoints);
+	cl::Buffer zeroBrtNodes;
+	bool isOld;
+
+	cl_int error = CLFW::getBuffer(brt_o, uniqueString + "brt", sizeof(BrtNode)* (globalSize));
+	error |= CLFW::getBuffer(zeroBrtNodes, uniqueString + "brtzero", sizeof(BrtNode)* (globalSize), isOld);
+	if (!isOld) {
+		BrtNode b = { 0 };
+		queue.enqueueFillBuffer<BrtNode>(zeroBrtNodes, { b }, 0, sizeof(BrtNode) * globalSize);
+	}
+	error |= queue.enqueueCopyBuffer(zeroBrtNodes, brt_o, 0, 0, sizeof(BrtNode)* (globalSize));
+	error |= CLFW::getBuffer(brtColors_o, uniqueString + "brtc", sizeof(cl_int)* (globalSize));
+	error |= kernel.setArg(0, brt_o);
+	error |= kernel.setArg(1, brtColors_o);
+	error |= kernel.setArg(2, zpoints_i);
+	error |= kernel.setArg(3, pointColors_i);
+	error |= kernel.setArg(4, mbits);
+	error |= kernel.setArg(5, totalUniquePoints);
+
+	error |= queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(globalSize), cl::NullRange);
+	return error;
+}
+
+inline cl_int BuildColoredBinaryRadixTree_s(
+	std::vector<big> &zpoints_i,
+	std::vector<cl_int> &pointColors_i,
+	cl_int mbits,
+	std::vector<BrtNode> &brt_o,
+	std::vector<cl_int> &brtColors_o)
+{
+	brt_o.resize(zpoints_i.size() - 1);
+	brtColors_o.resize(zpoints_i.size() - 1);
+	for (int i = 0; i < zpoints_i.size() - 1; ++i) {
+		BuildBinaryRadixTree(
+			brt_o.data(),
+			brtColors_o.data(),
+			zpoints_i.data(),
+			pointColors_i.data(),
+			mbits,
+			zpoints_i.size(),
+			true,
+			i);
+	}
+	return CL_SUCCESS;
+}
+
+inline cl_int PropagateBRTColors_p(
+	cl::Buffer &brt_i,
+	cl::Buffer &brtColors_io,
+	cl_int totalElements,
+	std::string uniqueString)
+{
+	if (totalElements == 0) return CL_SUCCESS;
+	cl::Kernel &kernel = CLFW::Kernels["PropagateBRTColorsKernel"];
+	cl::CommandQueue &queue = CLFW::DefaultQueue;
+	cl_int globalSize = CLFW::NextPow2(totalElements);
+	cl_int error = 0;
+	error |= kernel.setArg(0, brt_i);
+	error |= kernel.setArg(1, brtColors_io);
+	error |= kernel.setArg(2, totalElements);
+
+	error |= queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(totalElements), cl::NullRange);
+	return error;
+}
+
+inline cl_int PropagateBRTColors_s(
+	std::vector<BrtNode> &brt_i,
+	std::vector<cl_int> &brtColors_io)
+{
+	for (int gid = 0; gid < brt_i.size(); ++gid) {
+
+		cl_int index = gid;
+		BrtNode node = brt_i[gid];
+
+		//Only run BRT nodes with leaves
+		if (node.left_leaf || node.right_leaf) {
+			cl_int currentColor = brtColors_io[gid];
+
+			//Traverse up the tree
+			while (index != 0) {
+				index = node.parent;
+				node = brt_i[index];
+
+				//If the parent has no color, paint it and exit.
+				//atomic_cmpxchg(&brtColors_io[index], -1, currentColor);
+				cl_int r = brtColors_io[index];
+				if (brtColors_io[index] == -1) brtColors_io[index] = currentColor;
+
+				if (r == -1)  break;
+				// else if our colors don't match, mark it
+				else if (r != currentColor) {
+					if (r != -2) brtColors_io[index] = -2;
+					currentColor = -2;
+				}
+			}
+		}
+	}
+	return CL_SUCCESS;
+}

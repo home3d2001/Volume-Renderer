@@ -1,0 +1,30 @@
+#pragma once
+#include "GLUtilities/Polylines/Polylines.h"
+#include "GLUtilities/Boxes/Boxes.hpp"
+#include "GLUtilities/ImagePlane/ImagePlane.hpp"
+#include "Octree/Quadtree.hpp"
+#include "Octree/Octree.hpp"
+#include <memory>
+
+struct Gear {
+	float outerRadius;
+	float innerRadius;
+	int numTeeth;
+	float toothThickness;
+	float dAngle;
+	vector<float2> points;
+	glm::mat4 matrix;
+};
+
+namespace Data_OLD {
+	extern Polygons *polygons;
+	extern std::shared_ptr<PolyLines> lines;
+	extern std::shared_ptr<Boxes3D> boxes3D;
+	extern std::shared_ptr<Boxes3D> LHand;
+	extern std::shared_ptr<Boxes3D> RHand;
+	extern std::shared_ptr<Quadtree> quadtree;
+	extern std::shared_ptr<Octree> octree;
+	extern std::shared_ptr<ImagePlane> instructions;
+	extern vector<Gear> gears;
+	extern struct VR;
+};

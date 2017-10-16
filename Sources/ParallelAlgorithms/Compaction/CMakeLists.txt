@@ -1,0 +1,10 @@
+set(Compaction_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+	${CMAKE_CURRENT_SOURCE_DIR}/Compaction.cl
+	${CMAKE_CURRENT_SOURCE_DIR}/Compaction.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Compaction.hpp
+	PARENT_SCOPE)
+
+set(Compaction_KRNL
+	${CMAKE_CURRENT_SOURCE_DIR}/Compaction.cl
+	PARENT_SCOPE)

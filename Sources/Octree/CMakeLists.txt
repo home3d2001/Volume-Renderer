@@ -1,0 +1,21 @@
+# set (Octree_SRC 
+# 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+# 	${CMAKE_CURRENT_SOURCE_DIR}/Quadtree.hpp 
+# 	${CMAKE_CURRENT_SOURCE_DIR}/Quadtree.cpp 
+# 	${CMAKE_CURRENT_SOURCE_DIR}/Octree.hpp 
+# 	${CMAKE_CURRENT_SOURCE_DIR}/Octree.cpp 
+# 	${CMAKE_CURRENT_SOURCE_DIR}/Octree.cl
+# 	${CMAKE_CURRENT_SOURCE_DIR}/BuildOctree.hpp
+# 	${CMAKE_CURRENT_SOURCE_DIR}/BuildOctree.h
+# 	${CMAKE_CURRENT_SOURCE_DIR}/BuildOctree.cpp
+# 	${CMAKE_CURRENT_SOURCE_DIR}/BuildOctree.cl
+# 	${CMAKE_CURRENT_SOURCE_DIR}/Octnode.h
+# 	${CMAKE_CURRENT_SOURCE_DIR}/Quadnode.h
+# 	${CMAKE_CURRENT_SOURCE_DIR}/Shared.h
+# 	PARENT_SCOPE)
+
+#  set (Octree_KRNL
+# 	${CMAKE_CURRENT_SOURCE_DIR}/Octree.cl
+# 	${CMAKE_CURRENT_SOURCE_DIR}/BuildOctree.cl
+#  	${CMAKE_CURRENT_SOURCE_DIR}/BuildOctree.cpp
+#  	PARENT_SCOPE)

@@ -1,0 +1,14 @@
+# set (BigUnsigned_SRC 
+# 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+# 	${CMAKE_CURRENT_SOURCE_DIR}/BigNum.h 
+# 	${CMAKE_CURRENT_SOURCE_DIR}/LCP.h 
+# 	PARENT_SCOPE)
+
+# set(BigUnsigned_TEST
+# 	${CMAKE_CURRENT_SOURCE_DIR}/TestBig.cpp
+# 	PARENT_SCOPE)
+
+# set(BigUnsigned_KRNL
+# 	#${CMAKE_CURRENT_SOURCE_DIR}/BigNum.h 
+# 	#${CMAKE_CURRENT_SOURCE_DIR}/LCP.h 
+# 	PARENT_SCOPE)

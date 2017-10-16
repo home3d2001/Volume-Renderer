@@ -1,0 +1,9 @@
+set(OpenGL_SHDR
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/slicedVol.frag
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/slicedVol.vert
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/boxes.frag
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/boxes.vert
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/lines.frag
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/lines.vert
+	PARENT_SCOPE)

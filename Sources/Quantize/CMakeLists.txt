@@ -1,0 +1,11 @@
+set(Quantize_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+	${CMAKE_CURRENT_SOURCE_DIR}/Quantize.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Quantize.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Quantize.cl
+	PARENT_SCOPE)
+
+set(Quantize_KRNL
+	#${CMAKE_CURRENT_SOURCE_DIR}/Quantize.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Quantize.cl
+	PARENT_SCOPE)

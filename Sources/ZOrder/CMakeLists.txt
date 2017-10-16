@@ -1,0 +1,11 @@
+# set(ZOrder_SRC
+# 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+# 	${CMAKE_CURRENT_SOURCE_DIR}/z_order.h
+# 	${CMAKE_CURRENT_SOURCE_DIR}/ZOrder.cl
+# 	${CMAKE_CURRENT_SOURCE_DIR}/ZOrder.hpp
+# 	PARENT_SCOPE)
+
+# set(ZOrder_KRNL
+# 	#${CMAKE_CURRENT_SOURCE_DIR}/z_order.h
+# 	${CMAKE_CURRENT_SOURCE_DIR}/ZOrder.cl
+# 	PARENT_SCOPE)

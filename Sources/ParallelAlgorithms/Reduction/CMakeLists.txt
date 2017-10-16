@@ -1,0 +1,10 @@
+set(Reduction_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+	${CMAKE_CURRENT_SOURCE_DIR}/Reduction.cl
+	${CMAKE_CURRENT_SOURCE_DIR}/Reduction.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Reduction.hpp
+	PARENT_SCOPE)
+
+set(Reduction_KRNL
+	${CMAKE_CURRENT_SOURCE_DIR}/Reduction.cl
+	PARENT_SCOPE)

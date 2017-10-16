@@ -1,0 +1,12 @@
+set (ImagePlane_SRC 
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+	${CMAKE_CURRENT_SOURCE_DIR}/ImagePlane.cl
+	${CMAKE_CURRENT_SOURCE_DIR}/ImagePlane.h
+	${CMAKE_CURRENT_SOURCE_DIR}/ImagePlane.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/ImagePlane.cpp
+	PARENT_SCOPE)
+
+set (ImagePlane_KRNL
+	#${CMAKE_CURRENT_SOURCE_DIR}/ImagePlane.h
+	${CMAKE_CURRENT_SOURCE_DIR}/ImagePlane.cl
+	PARENT_SCOPE)

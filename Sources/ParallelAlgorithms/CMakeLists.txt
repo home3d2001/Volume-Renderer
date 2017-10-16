@@ -1,0 +1,30 @@
+add_subdirectory(Compaction)
+add_subdirectory(Matrix)
+add_subdirectory(Predication)
+add_subdirectory(RadixSort)
+add_subdirectory(Reduction)
+add_subdirectory(Scan)
+
+set(ParallelAlgorithms_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+	${CMAKE_CURRENT_SOURCE_DIR}/defs.h
+	${CMAKE_CURRENT_SOURCE_DIR}/ParallelAlgorithms.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/ParallelAlgorithms.h
+	${Compaction_SRC}
+	${Matrix_SRC}
+	${Predication_SRC}
+	${RadixSort_SRC}
+	${Reduction_SRC}
+	${Scan_SRC}
+	PARENT_SCOPE)
+
+ set(ParallelAlgorithms_KRNL
+	${CMAKE_CURRENT_SOURCE_DIR}/defs.h
+	${CMAKE_CURRENT_SOURCE_DIR}/ParallelAlgorithms.h
+	${Compaction_KRNL}
+	${Matrix_KRNL}
+	${Predication_KRNL}
+	${RadixSort_KRNL}
+	${Reduction_KRNL}
+	${Scan_KRNL}
+	PARENT_SCOPE)
