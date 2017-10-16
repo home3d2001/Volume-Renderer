@@ -1,10 +1,25 @@
-## Welcome to GitHub Pages
+## How I solved the assignment:
 
-You can use the [editor on GitHub](https://github.com/n8vm/SBVR/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+Most of this project was solved by following the [GPU Gems article](http://developer.download.nvidia.com/books/HTML/gpugems/gpugems_ch39.html) on slice based volume rendering. I implemented the camera controls myself, and recycled an old OpenGL/OpenCL project to speed up development.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Resources Used
+- C++, Visual Studio 2017, CMake, OpenGL, OpenCL, GLFW, GLM, GLEW. 
 
-### Markdown
+## Known bugs and TODO
+- Can't currently change out datasets without editing in code text. Need to read from command line args.
+- Can't alter the transfer function from within the application. The transfer function is a texture which must be edited externally.
+- OpenCL/OpenGL should be used to compute the proxy geometry.
+- I'd like to add a clipping plane, the ability to translate and rotate the volume, and the ability to translate the camera.
+
+## Program controls
+- Click and drag or arrow keys control camera.
+- +/- control camera dolly
+- yuiop control how many samples to take
+- qaws show camera direction, edge points, proxy geometry, and sampled volume respectively.
+- r resets the selected camera
+- 0 shows the tracked camera perspective
+- 1 shows the untracked camera perspective
+
 
 Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
@@ -35,26 +50,3 @@ Your Pages site will use the layout and styles from the Jekyll theme you have se
 ### Support or Contact
 
 Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
-
-
-# SBVR
-Slice Based Volume Renderer
-
-Report
-	* How I solved the assignment:
-		* Most of this project was solved by following the GPU Gems article on slice based volume rendering. I implemented the camera controls myself, and recycled an old OpenGL/OpenCL project to speed up development.
-	* What resources I used:
-		* C++, Visual Studio 2017, CMake, OpenGL, OpenCL, GLFW, GLM, GLEW. 
-	* Known bugs/TODO
-		* Can't currently change out datasets without editing in code text. Need to read from command line args.
-		* Can't alter the transfer function from within the application. The transfer function is a texture which must be edited externally.
-		* OpenCL/OpenGL should be used to compute the proxy geometry.
-		* I'd like to add a clipping plane, the ability to translate and rotate the volume, and the ability to translate the camera.
-	* Program controls
-		* Click and drag or arrow keys control camera.
-		* +/- control camera dolly
-		* yuiop control how many samples to take
-		* qaws show camera direction, edge points, proxy geometry, and sampled volume respectively.
-		* r resets the selected camera
-		* 0 shows the tracked camera perspective
-		* 1 shows the untracked camera perspective
