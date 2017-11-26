@@ -19,6 +19,12 @@ public:
 
   /* uniforms */
   GLuint matrix_id;
+	GLuint model_view_id;
+	GLuint projection_id;
+	GLuint focal_length_id;
+	GLuint ray_origin_id;
+	GLuint samples_id;
+	GLuint perturbation_id;
   GLuint pointSize_id;
   GLuint color_uniform_id;
 	GLuint texture0_id;
@@ -26,6 +32,7 @@ public:
 	GLuint offset_uniform_id;
 	GLuint width_uniform_id;
 	GLuint height_uniform_id;
+	GLuint window_size_id;
 
   ShaderProgram(const string vertShader, const string fragShader);
   void getAttributes();

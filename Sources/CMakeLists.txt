@@ -43,9 +43,13 @@ set(QUADTREE_TEST ${_SRC}
 
 # SBVR Target Source Files
 set(SBVR_SRC ${_SRC} 
-	${CMAKE_CURRENT_SOURCE_DIR}/Events/SBVREvents.h
-	${CMAKE_CURRENT_SOURCE_DIR}/Events/SBVREvents.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Main/SBVRMain.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+  PARENT_SCOPE)
+
+# RCVR Target Source Files 
+set(RCVR_SRC ${_SRC} 
+  ${CMAKE_CURRENT_SOURCE_DIR}/Main/RCVRMain.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
   PARENT_SCOPE)
 

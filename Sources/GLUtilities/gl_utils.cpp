@@ -108,14 +108,14 @@ namespace GLUtilities {
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
-		glfwWindowHint(GLFW_DECORATED, GL_FALSE);
+		//glfwWindowHint(GLFW_DECORATED, GL_FALSE);
 
 		if (Options::fullScreen) {
 			/* Get main monitor width and height */
 			const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 			window_width = mode->width;
 			window_height = mode->height;
-			glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
+			//glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 			window = glfwCreateWindow(
 				window_width, window_height, "Extended Init.", glfwGetPrimaryMonitor(), NULL
 			);

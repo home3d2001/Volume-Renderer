@@ -1,9 +1,9 @@
 #version 410
-uniform sampler2D input_texture;
+uniform sampler2D texture0;
 
 in vec2 ftexcoord;
 out vec4 finalColor;
 
 void main() {
-  finalColor = texture(input_texture, ftexcoord * .5 + .5);
+  finalColor = texture(texture0, ftexcoord);
 }

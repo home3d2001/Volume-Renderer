@@ -9,7 +9,8 @@
 		Add device queues
 */
 #define OPENCL_SOURCES_PATH "./Sources/OpenCL/opencl_sources.txt"
-#define CL_HPP_TARGET_OPENCL_VERSION 200
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
 
 /* Included files */
 #include "cl2.hpp"

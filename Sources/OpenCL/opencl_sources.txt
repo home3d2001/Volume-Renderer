@@ -1,15 +1,16 @@
-C:/git/UofU/SBVR/Sources/GLUtilities/Boxes/Boxes.cl
-C:/git/UofU/SBVR/Sources/GLUtilities/Polylines/Polylines.h
-C:/git/UofU/SBVR/Sources/GLUtilities/Polylines/Polylines.cl
-C:/git/UofU/SBVR/Sources/GLUtilities/ImagePlane/ImagePlane.cl
-C:/git/UofU/SBVR/Sources/GLUtilities/SlicedVolume/SlicedVolume.cl
-C:/git/UofU/SBVR/Sources/ParallelAlgorithms/defs.h
-C:/git/UofU/SBVR/Sources/ParallelAlgorithms/ParallelAlgorithms.h
-C:/git/UofU/SBVR/Sources/ParallelAlgorithms/Compaction/Compaction.cl
-C:/git/UofU/SBVR/Sources/ParallelAlgorithms/Matrix/Matrix.cl
-C:/git/UofU/SBVR/Sources/ParallelAlgorithms/Predication/Predication.cl
-C:/git/UofU/SBVR/Sources/ParallelAlgorithms/RadixSort/RadixSort.cl
-C:/git/UofU/SBVR/Sources/ParallelAlgorithms/Reduction/Reduction.cl
-C:/git/UofU/SBVR/Sources/ParallelAlgorithms/Scan/Scan.cl
-C:/git/UofU/SBVR/Sources/ParallelAlgorithms/Scan/Scan.h
-C:/git/UofU/SBVR/Sources/Quantize/Quantize.cl
+C:/git/UofU/Volume Renderer/Sources/Entities/Boxes/Boxes.cl
+C:/git/UofU/Volume Renderer/Sources/Entities/Polylines/Polylines.h
+C:/git/UofU/Volume Renderer/Sources/Entities/Polylines/Polylines.cl
+C:/git/UofU/Volume Renderer/Sources/Entities/ImagePlane/ImagePlane.cl
+C:/git/UofU/Volume Renderer/Sources/Entities/SlicedVolume/SlicedVolume.cl
+C:/git/UofU/Volume Renderer/Sources/Entities/RaycastVolume/RaycastVolume.cl
+C:/git/UofU/Volume Renderer/Sources/ParallelAlgorithms/defs.h
+C:/git/UofU/Volume Renderer/Sources/ParallelAlgorithms/ParallelAlgorithms.h
+C:/git/UofU/Volume Renderer/Sources/ParallelAlgorithms/Compaction/Compaction.cl
+C:/git/UofU/Volume Renderer/Sources/ParallelAlgorithms/Matrix/Matrix.cl
+C:/git/UofU/Volume Renderer/Sources/ParallelAlgorithms/Predication/Predication.cl
+C:/git/UofU/Volume Renderer/Sources/ParallelAlgorithms/RadixSort/RadixSort.cl
+C:/git/UofU/Volume Renderer/Sources/ParallelAlgorithms/Reduction/Reduction.cl
+C:/git/UofU/Volume Renderer/Sources/ParallelAlgorithms/Scan/Scan.cl
+C:/git/UofU/Volume Renderer/Sources/ParallelAlgorithms/Scan/Scan.h
+C:/git/UofU/Volume Renderer/Sources/Quantize/Quantize.cl

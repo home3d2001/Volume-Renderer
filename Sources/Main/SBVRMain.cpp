@@ -5,13 +5,12 @@
 #include <iostream>
 #include "GLUtilities/gl_utils.h"
 #include "clfw.hpp"
-#include "Events/SBVREvents.h"
 #include "Shaders/Shaders.hpp"
 #include "Options/Options.h"
-#include "GLUtilities/OrbitCamera.h"
-#include "GLUtilities/Boxes/Boxes.hpp"
-#include "GLUtilities/SlicedVolume/SlicedVolume.hpp"
-#include "GLUtilities/ImagePlane/ImagePlane.hpp"
+#include "Entities/Cameras/OrbitCamera.h"
+#include "Entities/Boxes/Boxes.hpp"
+#include "Entities/SlicedVolume/SlicedVolume.hpp"
+#include "Entities/ImagePlane/ImagePlane.hpp"
 
 #include <thread>
 #include <atomic>
@@ -105,9 +104,9 @@ void renderEntities() {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glfwPollEvents();
 			if (camera->id == camera->selected)
-				World.render(camera->PVM);
+				World.render(camera->VM, camera->P);
 			else if (altCamera->id == camera->selected) {
-				World.render(altCamera->PVM);
+				World.render(altCamera->VM, altCamera->P);
 			}
 			Screen.render();
 			glfwSwapBuffers(GLUtilities::window);
@@ -144,28 +143,30 @@ int main(int argc, char** argv) {
 	/* Setup the scene */
 	shared_ptr<OrbitCamera> camera = make_shared<OrbitCamera>(glm::vec3(0.0, 5.0, 0.0));
 	shared_ptr<OrbitCamera> altCamera = make_shared<OrbitCamera>(glm::vec3(0.0, 10.0, 0.0));
-	camera->setAspectRatio(GLUtilities::window_width / (float)GLUtilities::window_height);
-	altCamera->setAspectRatio(GLUtilities::window_width / (float)GLUtilities::window_height);
+	camera->setWindowSize(GLUtilities::window_width, GLUtilities::window_height);
+	altCamera->setWindowSize(GLUtilities::window_width, GLUtilities::window_height);
 
 	std::shared_ptr<Boxes3D> boxes = make_shared<Boxes3D>();
 	boxes->add({ 0.0, 0.0, 0.0, 1.0 }, { 0.5, 0.5, 0.5, 1.0 }, { 1.0, 0.0, 0.0, 1.0 });
-	shared_ptr<ImagePlane> transferFunction = make_shared<ImagePlane>("TransferFunction.png");
+	shared_ptr<ImagePlane> transferFunction = make_shared<ImagePlane>("BWTransferFunction.png");
 	transferFunction->M = glm::translate(transferFunction->M, glm::vec3(-1.0, -1.0, 0.0));
 	transferFunction->M = glm::scale(transferFunction->M, glm::vec3(1/4096.0 * 2.0, 1 / 256.0 * .1, 1.0));
-	shared_ptr<SlicedVolume> volume = make_shared<SlicedVolume>("Tooth.raw", make_int3(256, 256, 161), 2, camera, transferFunction, 16);
+	shared_ptr<SlicedVolume> volume = make_shared<SlicedVolume>("Sheep.raw", make_int3(352, 352, 256), 1, camera, transferFunction, 16);
 
+	
 	World.add("BoundingBox", boxes);
 	World.add("Camera", camera);
 	World.add("AltCamera", altCamera);
 	World.add("Volume", volume);
-	Screen.add("TransferFunction", transferFunction);
+	
+	World.add("TransferFunction", transferFunction);
 
 	/* Handle scene evens on seperate thread */
 	thread updateThread = thread(updateEntities);
 
 	/* Render on the current thread */
 	renderEntities();
-
+	
 	/* Quit */
 	quit = true;
 	updateThread.join();

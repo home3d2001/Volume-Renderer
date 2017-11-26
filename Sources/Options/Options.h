@@ -25,28 +25,17 @@
 namespace Options {
   extern int computeDevice;
   extern std::vector<std::string> filenames;
-  extern unsigned char max_level;
+	extern std::string volumeLocation;
+	extern int volumeWidth, volumeHeight, volumeDepth;
+	extern int bytesPerPixel;
+	extern int totalSamples;
   extern bool series;
 
-  extern float bbxmin, bbymin, bbxmax, bbymax;
-  
   // Render settings
   extern bool showObjectVertices;
-	extern bool showObjects;
-	extern bool showQuantizedObjects;
-  extern bool showOctree;
-  extern bool showObjectIntersections;
-	extern bool showResolutionPoints;
-	extern bool showInstructions;
-	extern bool pruneOctree;
-	extern bool resolveAmbiguousCells;
+	extern bool showTransferFunctionGUI;
 
-  extern float conflict_color[3];
-
-  extern int maxConflictIterations;
-
-  extern bool zoomMode;
-  extern bool debug;
+	extern bool debug;
   extern bool benchmarking;
   extern std::string cl_options;
 	extern bool fullScreen;

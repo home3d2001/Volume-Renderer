@@ -1,0 +1,7 @@
+set (Cameras_SRC 
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+	${CMAKE_CURRENT_SOURCE_DIR}/OrbitCamera.h
+	${CMAKE_CURRENT_SOURCE_DIR}/OrbitCamera.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/OrthoCamera.h
+	${CMAKE_CURRENT_SOURCE_DIR}/OrthoCamera.cpp
+	PARENT_SCOPE)

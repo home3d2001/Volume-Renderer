@@ -5,7 +5,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Must go before the project command
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10" CACHE STRING "Minimum OS X deployment version")
 
-project (Slice_Based_Volume_Renderer)
+project (Volume_Renderer)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake)
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
@@ -92,18 +92,23 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Sources)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Dependencies)
 
 # UNIT TEST TARGET
-add_executable (Unit_Tests "${QUADTREE_TEST}")
-target_link_libraries (Unit_Tests ${LIBRARIES} CLFW)
+# add_executable (Unit_Tests "${QUADTREE_TEST}")
+# target_link_libraries (Unit_Tests ${LIBRARIES} CLFW)
 
-# MAIN TARGET
+# SLICE BASED TARGET
 add_executable (SBVR "${SBVR_SRC}")
 target_link_libraries (SBVR ${LIBRARIES} CLFW)
 
-# VR Target
+# RAY CASTED VOLUME RENDERER
+add_executable (RCVR "${RCVR_SRC}")
+target_link_libraries (RCVR ${LIBRARIES} CLFW)
+
+# SLICE BASED VR Target
 if(BUILD_VR)
 add_executable (SBVR_VR "${OCTREE_VR_SRC}")
 target_link_libraries (SBVR_VR ${LIBRARIES} CLFW)
 endif(BUILD_VR)
+
 
 # For IDE folder hierarchy generation
 foreach(_source IN ITEMS ${SRC_LIST})

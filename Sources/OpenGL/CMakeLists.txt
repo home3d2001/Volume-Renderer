@@ -1,9 +1,13 @@
 set(OpenGL_SHDR
 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/raycastVol.frag
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/raycastVol.vert
 	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/slicedVol.frag
 	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/slicedVol.vert
 	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/boxes.frag
 	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/boxes.vert
 	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/lines.frag
 	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/lines.vert
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/uniformColor.frag
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/uniformColor.vert
 	PARENT_SCOPE)
