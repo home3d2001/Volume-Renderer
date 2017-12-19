@@ -70,5 +70,13 @@ void print_error(const GLenum error, const char* file, int line_number);
   GLUtilities::print_error(error, __FILE__, __LINE__); \
 }
 
+#define print_gl_error_w_id(id) { \
+  GLenum error = glGetError(); \
+		if (error != GL_NO_ERROR) { \
+			std::cout<<id<< " has error :"; \
+			GLUtilities::print_error(error, __FILE__, __LINE__); \
+		} \
+}
+
 #define ignore_gl_error() { glGetError(); }
 

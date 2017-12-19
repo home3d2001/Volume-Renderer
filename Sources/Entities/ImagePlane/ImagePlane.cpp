@@ -15,6 +15,10 @@ namespace Entities {
 		updateVAO();
 	}
 
+	void ImagePlane::setInterpolation(bool useInterpolation) {
+		this->useInterpolation = useInterpolation;
+	}
+
 	void ImagePlane::updateVBO() {
 		vector<float> planePoints = {
 			 -1., -1.,  0.0,  1.0 ,
@@ -54,6 +58,10 @@ namespace Entities {
 		print_gl_error();
 
 		glBindTexture(GL_TEXTURE_2D, texture->textureID);
+		
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (useInterpolation) ? GL_LINEAR : GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (useInterpolation) ? GL_LINEAR : GL_NEAREST);
+
 		glUniform1i(Shaders::planeProgram->texture0_id, 0);
 		glUniform3fv(Shaders::planeProgram->offset_uniform_id,
 			1, &offset.x);

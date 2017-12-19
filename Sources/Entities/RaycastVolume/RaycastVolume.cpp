@@ -1,6 +1,8 @@
 #include "RaycastVolume.hpp"
 #include "Vector/vec.h"
 #include "Entities/Cameras/OrbitCamera.h"
+#include <algorithm>
+#include "Entities/Box/Box.hpp"
 
 namespace Entities {
 
@@ -21,10 +23,13 @@ namespace Entities {
 		this->samples = samples;
 		this->bytesPerPixel = bytesPerPixel;
 
+		bb = make_shared<Box>();
+		add("bb", bb);
+
 		updateVBO();
 		updateVAO();
 		updateImage(filename, rawDimensions, bytesPerPixel);
-		computeHistogram();
+		compute2DHistogram();
 	}
 
 	void RaycastVolume::setTransferFunction(std::shared_ptr<Texture> transferFunction) {
@@ -126,7 +131,7 @@ namespace Entities {
 		
 		glm::mat4 finalMatrix = parent_matrix * transform.LocalToParentMatrix();
 		glm::mat4 inverseMatrix = transform.ParentToLocalMatrix();
-		glm::vec4 position = glm::vec4(camera->getPosition(), 1.0);
+		glm::vec4 position = glm::vec4(camera->transform.position, 1.0);
 		glm::vec4 rayOrigin = inverseMatrix * position;
 
 		/* 1. Use program */
@@ -143,15 +148,24 @@ namespace Entities {
 		glUniform3fv(Shaders::raycastVolProgram->ray_origin_id, 1, &rayOrigin.x);
 		glUniform1i(Shaders::raycastVolProgram->samples_id, samples);
 		glUniform1i(Shaders::raycastVolProgram->perturbation_id, perturbation);
+		glUniform2fv(Shaders::raycastVolProgram->texmaxcoord_id, 1, &maxTransferFunctionCoord.x);
+		glUniform2fv(Shaders::raycastVolProgram->texmincoord_id, 1, &minTransferFunctionCoord.x);
 		print_gl_error();
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_3D, textureID);
-
+		glBindTexture(GL_TEXTURE_3D, volumeTextureID);
 		glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, (interpolate) ? GL_LINEAR : GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, (interpolate) ? GL_LINEAR : GL_NEAREST);
-
 		glUniform1i(Shaders::raycastVolProgram->texture0_id, 0);
+		print_gl_error();
+		
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_3D, gradientTextureID);
+		glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, (interpolate) ? GL_LINEAR : GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, (interpolate) ? GL_LINEAR : GL_NEAREST);
+		glUniform1i(Shaders::raycastVolProgram->texture2_id, 2);
+		print_gl_error();
+				
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, transferFunction->textureID);
 		glUniform1i(Shaders::raycastVolProgram->texture1_id, 1);
@@ -160,6 +174,8 @@ namespace Entities {
 		/* 4. Draw */
 		glDrawArrays(GL_TRIANGLES, 0, pointsVBOSize / sizeof(float4));
 		print_gl_error();
+
+		//Entity::render(parent_matrix, projection);
 	}
 
 	void RaycastVolume::handleKeys()
@@ -176,19 +192,19 @@ namespace Entities {
 		}
 
 		if (glfwGetKey(GLUtilities::window, GLFW_KEY_U)) {
-			samples = 64;
-		}
-
-		if (glfwGetKey(GLUtilities::window, GLFW_KEY_I)) {
 			samples = 128;
 		}
 
+		if (glfwGetKey(GLUtilities::window, GLFW_KEY_I)) {
+			samples = 512;
+		}
+
 		if (glfwGetKey(GLUtilities::window, GLFW_KEY_O)) {
-			samples = 256;
+			samples = 1024;
 		}
 
 		if (glfwGetKey(GLUtilities::window, GLFW_KEY_P)) {
-			samples = 1024;
+			samples = 2048;
 		}
 
 		if (glfwGetKey(GLUtilities::window, GLFW_KEY_COMMA)) {
@@ -209,7 +225,8 @@ namespace Entities {
 	}
 
 	void RaycastVolume::update() {
-		//this->transform.AddRotation(glm::angleAxis(0.01f, glm::vec3(0.0, .0, 1.0)));
+	
+		this->transform.AddRotation(glm::angleAxis(0.01f, glm::vec3(0.0, .0, 1.0)));
 
 		handleKeys();
 	}
@@ -224,14 +241,36 @@ namespace Entities {
 			return;
 		}
 
-		pVolume.resize(rawDimensions.x * rawDimensions.y * rawDimensions.z * bytesPerPixel);
-		fread(pVolume.data(), sizeof(GLubyte), sizeInBytes, pFile);
+		volume.resize(rawDimensions.x * rawDimensions.y * rawDimensions.z * bytesPerPixel);
+		fread(volume.data(), sizeof(GLubyte), sizeInBytes, pFile);
 		fclose(pFile);
 
-		glGenTextures(1, &textureID);
+		computeGradientMagnitudeVolume();
+
+		/* Upload gradient magnitude*/
+			glGenTextures(1, &gradientTextureID);
 		print_gl_error();
 
-		glBindTexture(GL_TEXTURE_3D, textureID);
+		glBindTexture(GL_TEXTURE_3D, gradientTextureID);
+		print_gl_error();
+
+		glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, rawDimensions.x, rawDimensions.y, rawDimensions.z, 0, GL_LUMINANCE,
+			GL_FLOAT, gradientMagnitudeVolume.data());
+
+		//glGenerateMipmap(GL_TEXTURE_3D);
+
+		print_gl_error();
+
+		/* Upload data values */
+		glGenTextures(1, &volumeTextureID);
+		print_gl_error();
+
+		glBindTexture(GL_TEXTURE_3D, volumeTextureID);
 		print_gl_error();
 
 		glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -240,11 +279,72 @@ namespace Entities {
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		glTexImage3D(GL_TEXTURE_3D, 0, GL_LUMINANCE, rawDimensions.x, rawDimensions.y, rawDimensions.z, 0, GL_LUMINANCE,
-			(bytesPerPixel == 1) ? GL_UNSIGNED_BYTE : GL_UNSIGNED_SHORT, pVolume.data());
+			(bytesPerPixel == 1) ? GL_UNSIGNED_BYTE : GL_UNSIGNED_SHORT, volume.data());
 		
 		//glGenerateMipmap(GL_TEXTURE_3D);
 
 		print_gl_error();
+	}
+
+	inline unsigned short getVoxel(int3 pos, int3 size, int bytesPerPixel, const std::vector<GLubyte> &volume) {
+		if (bytesPerPixel == 1)
+			return volume[pos.x + pos.y * size.x + pos.z * size.x * size.y]; 
+		else {
+			unsigned short high = volume[(pos.x + pos.y * size.x + pos.z * size.x * size.y) * 2];
+			unsigned short low = volume[(pos.x + pos.y * size.x + pos.z * size.x * size.y) * 2 + 1];
+
+			return high << 8 | low;
+		}
+	}
+
+	inline unsigned short getVoxel(int pos, int bytesPerPixel, const std::vector<GLubyte> &volume) {
+		if (bytesPerPixel == 1)
+			return volume[pos];
+		else {
+			unsigned short high = volume[pos * 2];
+			unsigned short low = volume[pos * 2 + 1];
+
+			return high << 8 | low;
+		}
+	}
+
+	void computeGradientMagnitudeAtPoint(int3 pos, int3 size, int bytesPerPixel, const std::vector<GLubyte> &input, std::vector<GLfloat> &output) {
+		if ((pos.x == 0 || pos.y == 0 || pos.z == 0) || (pos.x == size.x - 1 || pos.y == size.y - 1 || pos.z == size.z - 1)) {
+			output[pos.x + pos.y * size.x + pos.z * size.x * size.y] = 0;
+		}
+		else {
+			double dx = getVoxel(pos + make_int3(1, 0, 0), size, bytesPerPixel, input) - getVoxel(pos - make_int3(1, 0, 0), size, bytesPerPixel, input);
+			double dy = getVoxel(pos + make_int3(0, 1, 0), size, bytesPerPixel, input) - getVoxel(pos - make_int3(0, 1, 0), size, bytesPerPixel, input);
+			double dz = getVoxel(pos + make_int3(0, 0, 1), size, bytesPerPixel, input) - getVoxel(pos - make_int3(0, 0, 1), size, bytesPerPixel, input);
+			double udx = abs(dx); // for large negative numbers
+			double udy = abs(dy);
+			double udz = abs(dz);
+
+			output[pos.x + pos.y * size.x + pos.z * size.x * size.y] = sqrt((udx*udx + udy*udy + udz*udz));
+			assert(output[pos.x + pos.y * size.x + pos.z * size.x * size.y] >= 0);// = sqrt(dx*dx + dy*dy + dz*dz);
+		}
+	}
+
+	void RaycastVolume::computeGradientMagnitudeVolume() {
+		gradientMagnitudeVolume.resize(rawDimensions.x * rawDimensions.y * rawDimensions.z);
+		for (int z = 0; z < rawDimensions.z; ++z) {
+			for (int y = 0; y < rawDimensions.y; ++y) {
+				for (int x = 0; x < rawDimensions.x; ++x) {
+					computeGradientMagnitudeAtPoint(make_int3(x, y, z), rawDimensions, bytesPerPixel, volume, gradientMagnitudeVolume);
+				}
+			}
+		}
+
+		/* Normalize gradient magnitudes */
+		float maxMagnitude = 0;
+		for (int i = 0; i < gradientMagnitudeVolume.size(); ++i) {
+			maxMagnitude = std::max(maxMagnitude, gradientMagnitudeVolume[i]);
+		}
+
+		/*for (int i = 0; i < gradientMagnitudeVolume.size(); ++i) {
+			gradientMagnitudeVolume[i] = gradientMagnitudeVolume[i] / maxMagnitude;
+		}*/
+
 	}
 
 	void RaycastVolume::computeHistogram() {
@@ -260,16 +360,16 @@ namespace Entities {
 		vector<int> histogram(width);
 
 		int height = 0;
-		for (int i = 0; i < pVolume.size(); ++i) {
-			int address = pVolume.at(i);
+		for (int i = 0; i < volume.size(); ++i) {
+			int address = volume.at(i);
 			histogram.at(address) += 1;
-			height = std::max(histogram.at(pVolume.at(i)), height);
+			height = std::max(histogram.at(volume.at(i)), height);
 		}
 
 		vector<GLubyte> image(256 * width);
 		for (int y = 0; y < 256; ++y) {
 			for (int x = 0; x < width; ++x) {
-				float normalized = histogram.at(pVolume.at(x)) / (float)height; // potential bug here
+				float normalized = histogram.at(volume.at(x)) / (float)height; // potential bug here
 				image.at(x + (255 - y) * width) = ((255 * normalized) < y) ? 255 : 0;
 			}
 		}
@@ -282,9 +382,9 @@ namespace Entities {
 		vector<int> histogram(256); // 16 bit lut is too big. use 8 bits for now.
 
 		int height = 0;
-		for (int i = 0; i < pVolume.size(); i+=2) {
-			int address = pVolume.at(i);
-			address |= pVolume.at(i + 1) << 8;
+		for (int i = 0; i < volume.size(); i+=2) {
+			int address = volume.at(i);
+			address |= volume.at(i + 1) << 8;
 
 			float normalized = address / 65536.0;
 			histogram.at(normalized * 255) += 1;
@@ -299,5 +399,117 @@ namespace Entities {
 			}
 		}
 		histogramTexture = make_shared<Texture>(256, 256, image, true);
+	}
+
+	void equalizeHistogram(int* pdata, int width, int height, int max_val = 255)
+	{
+		int total = width*height;
+		int n_bins = max_val + 1;
+
+		// Compute histogram
+		vector<int> hist(n_bins, 0);
+		for (int i = 0; i < total; ++i) {
+			hist[pdata[i]]++;
+		}
+
+		// Build LUT from cumulative histrogram
+
+		// Find first non-zero bin
+		int i = 0;
+		while (!hist[i]) ++i;
+
+		if (hist[i] == total) {
+			for (int j = 0; j < total; ++j) {
+				pdata[j] = i;
+			}
+			return;
+		}
+
+		// Compute scale
+		float scale = (n_bins - 1.f) / (total - hist[i]);
+
+		// Initialize lut
+		vector<int> lut(n_bins, 0);
+		i++;
+
+		int sum = 0;
+		for (; i < hist.size(); ++i) {
+			sum += hist[i];
+			// the value is saturated in range [0, max_val]
+			lut[i] = std::max(0, std::min(int(round(sum * scale)), max_val));
+		}
+
+		// Apply equalization
+		for (int i = 0; i < total; ++i) {
+			pdata[i] = lut[pdata[i]];
+		}
+	}
+
+	void RaycastVolume::compute2DHistogram() {
+		int totalVoxels = rawDimensions.x * rawDimensions.y * rawDimensions.z;
+
+		/* Determine max gradient magnitude & data value */
+		float maxDataValue = 0;
+		float maxMagnitude = 0;
+		for (int i = 0; i < gradientMagnitudeVolume.size(); ++i) {
+			maxMagnitude = std::max(maxMagnitude, gradientMagnitudeVolume[i]);
+			maxDataValue = std::max(maxDataValue, (float)getVoxel(i, bytesPerPixel, volume));
+		}
+
+		int textureWidth = 256;
+		int textureHeight = 256;
+		vector<int> TwoDimHistogram(textureWidth * textureHeight);
+
+		/* Add data value and gradient magnitude to cooresponding bins */
+		int maxBinHeight = 0;
+		for (int i = 0; i < totalVoxels; ++i) {
+			unsigned int xaddress = getVoxel(i, bytesPerPixel, volume);
+			unsigned int yaddress = gradientMagnitudeVolume.at(i);
+
+			xaddress = (xaddress / maxDataValue) * (textureWidth - 1);
+			yaddress = (yaddress / maxMagnitude) * (textureHeight - 1);
+
+			TwoDimHistogram.at(xaddress + (yaddress * textureWidth)) += 1;
+			maxBinHeight = std::max(TwoDimHistogram.at(xaddress + (yaddress * textureWidth)), maxBinHeight);
+		}
+
+		//maxBinHeight = TwoDimHistogram.size();
+		//for (int i = 0; i < TwoDimHistogram.size(); ++i) {
+		//	TwoDimHistogram.at(i) = i;
+		//}
+
+		/* Equilize that */
+		equalizeHistogram(TwoDimHistogram.data(), textureWidth, textureHeight, maxBinHeight);
+
+
+		/* Now use that as a lookup table */
+		vector<GLubyte> image(textureHeight * textureWidth);
+		for (int i = 0; i < image.size(); ++i) {
+			float normalized = TwoDimHistogram.at(i) / (float)maxBinHeight;
+			image.at(i) = normalized * 255;
+		}
+
+
+
+
+		//for (int i = 0; i < image.size(); ++i) {
+		//		float normalized = histogram.at(i) / (float)maxBinHeight; // potential bug here
+		//		image.at(i) = (255 * normalized);
+		//}
+
+		histogramTexture = make_shared<Texture>(textureWidth, textureHeight, image, true);
+
+		minTransferFunctionCoord = glm::vec2(0, 0);
+		int maxValue = (bytesPerPixel == 1) ? 255 : 65535;
+		//maxTransferFunctionCoord = glm::vec2(maxDataValue / (float)maxValue, maxMagnitude);
+		maxTransferFunctionCoord = glm::vec2(1, maxMagnitude);
+
+		//for (int i = 0; i < histogram.size(); ++i) {
+		//	float normalized = histogram.at(i) / (float)maxBinHeight; // 0-1
+		//	image.at(i) = (255 * normalized); // 0-255
+
+		//}
+
+		//histogramTexture = make_shared<Texture>(textureWidth, textureHeight, image, true);
 	}
 }

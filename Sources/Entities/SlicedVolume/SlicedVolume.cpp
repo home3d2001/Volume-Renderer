@@ -80,9 +80,9 @@ namespace Entities {
 		using namespace glm;
 		using namespace std;
 
-		vec3 pos = camera->getPosition();
-		vec3 cameraLeft = camera->getLeft();
-		vec3 frwd = camera->getForward();
+		vec3 pos = camera->transform.position;
+		vec3 cameraLeft = camera->transform.right; /* BUG HERE. Right isn't transformed yet */
+		vec3 frwd = camera->transform.forward;
 
 		pos = vec3(vec4(pos, 1.0) * this->transform.LocalToParentMatrix());
 		cameraLeft = vec3(vec4(cameraLeft, 1.0) * this->transform.LocalToParentMatrix());

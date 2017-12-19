@@ -6,6 +6,7 @@ out vec4 finalColor;
 /* Volume and transfer function textures */
 uniform sampler3D texture0;
 uniform sampler2D texture1;
+uniform sampler3D texture2;
 
 /* Uniforms for ray generation */
 uniform mat4 model_view;
@@ -20,6 +21,8 @@ const float maxDist = sqrt(2.0);
 float step_size = maxDist/float(samples);
 float s0s = (step_size*float(samples))/maxDist;
 
+uniform vec2 texmincoord;
+uniform vec2 texmaxcoord;
 //uniform float Absorption = 0.0;
 
 //int numSamples = 128;
@@ -91,8 +94,14 @@ void main() {
 	float travel = distance(ray_stop, ray_start);
 	for (int i=0; i < samples && travel > 0.0; ++i, pos += step, travel -= step_size) {
 		float datavalue = texture(texture0, pos).r;
-		vec4 cx = texture(texture1, vec2(datavalue, 0.0));
+		float gradient = texture(texture2, pos).r;
+
+		//vec4 cx = texture(texture1, vec2(datavalue, 0.0));
 		
+		vec4 cx = texture(texture1, 
+			vec2((datavalue - texmincoord.x) / (texmaxcoord.x - texmincoord.x), 
+				gradient / float(texmaxcoord.y))
+			);
 
 
 		//color.a = 1.0 - pow(1.0 - color.a, s0s);

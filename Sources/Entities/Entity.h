@@ -35,14 +35,18 @@ namespace Entities {
 		virtual void render(glm::mat4 parent_matrix = glm::mat4(), glm::mat4 projection = glm::mat4()) {
 			glm::mat4 final_matrix = parent_matrix * transform.LocalToParentMatrix();
 			for (auto i : objects) {
-				if (i.second.get()->toggled)
+				if (i.second.get()->toggled) {
+					print_gl_error_w_id("before " + i.first + " render");
 					i.second->render(final_matrix, projection);
+					print_gl_error_w_id("after " + i.first + " render");
+				}
 			}
 		};
 		virtual void update() {
 			for (auto i : objects) {
-				if (i.second.get()->toggled)
+				if (i.second.get()->toggled) {
 					i.second->update();
+				}
 			}
 		};
 	
@@ -53,7 +57,6 @@ namespace Entities {
 					/* Transform the ray */
 					glm::vec4 newPoint = i.second->transform.ParentToLocalMatrix() * point;
 					glm::vec4 newDirection = (i.second->transform.ParentToLocalMatrix() * (point + direction)) - newPoint;
-
 					i.second->raycast(newPoint, newDirection);
 				}
 			}

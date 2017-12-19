@@ -9,16 +9,17 @@ namespace Entities {
 		canvas = make_shared<Canvas>();
 		canvas->setColor(glm::vec4(1, 1, 1, .1));
 
-		/* A curve editor has an image plane, which displays the texture being modified */
-		std::shared_ptr<ImagePlane> image = make_shared<ImagePlane>(texture);
-		image->transform.SetScale(1.0, .2, 1.0);
-		image->transform.SetPosition(0, .8, 0);
-		add("image", image);
+		///* A curve editor has an image plane, which displays the texture being modified */
+		//std::shared_ptr<ImagePlane> image = make_shared<ImagePlane>(texture);
+		//image->transform.SetScale(1.0, .2, 1.0);
+		//image->transform.SetPosition(0, .8, 0);
+		//add("image", image);
 
 		/* A curve editor has a histogram */
 		std::shared_ptr<ImagePlane> histogram = make_shared<ImagePlane>(histogramTexture);
-		histogram->transform.SetScale(1.0, .8, 1.0);
-		histogram->transform.SetPosition(0, -.2, 0);
+		histogram->setInterpolation(false);
+		histogram->transform.SetScale(1.0, 1.0, 1.0);
+		//histogram->transform.SetPosition(0, -.2, 0);
 		add("histogram", histogram);
 
 		/* A curve editor has draggable buttons to edit the texture */

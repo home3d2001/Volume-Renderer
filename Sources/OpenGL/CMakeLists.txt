@@ -10,4 +10,6 @@ set(OpenGL_SHDR
 	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/lines.vert
 	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/uniformColor.frag
 	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/uniformColor.vert
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/NonShaded2VBO.frag
+	${CMAKE_CURRENT_SOURCE_DIR}/Shaders/NonShaded2VBO.vert
 	PARENT_SCOPE)

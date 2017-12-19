@@ -24,14 +24,11 @@ namespace Entities {
 			bool mousePrevPressed;
 
 			void handleArrowKeys();
-			void handleMouse();
 			void handleZoom();
 			void handleReset();
-			void handleCameraSwitch();
+			/*void handleMouse();
+			void handleCameraSwitch();*/
 			
-			glm::vec3 up;
-			glm::vec3 forward;
-			glm::vec3 left;
 		public: 
 			float fov;
 			float focalLength;
@@ -44,29 +41,26 @@ namespace Entities {
 			static int selected;
 			int id;
 			bool visible = true;
-			OrbitCamera(glm::vec3 initialPos = glm::vec3(), glm::quat initialRot = glm::quat());
+			OrbitCamera(glm::vec3 initialPos = glm::vec3(), glm::vec3 rotatePoint = glm::vec3(), glm::quat initialRot = glm::quat());
 			void setWindowSize(int width, int height);
 			// View
 			void render(glm::mat4 parent_matrix, glm::mat4 projection);
 			void update();
 			void raycast(glm::vec4 point, glm::vec4 direction);
 			void recalculate();
-			glm::vec3 getForward();
-			glm::vec3 getLeft();
-			glm::vec3 getUp();
-			glm::vec3 getPosition();
 			glm::vec3 initialPos;
 			glm::vec3 position;
+			glm::vec3 rotatePoint;
 			glm::quat initialRot;
-			glm::quat rotation;
-			glm::mat4 VM, IVM;
-			glm::mat4 IM;
+			//glm::quat rotation;
+			//glm::mat4 VM, IVM;
+			//glm::mat4 IM;
 			atomic<glm::mat4> atomIM = glm::mat4(), atomIV = glm::mat4();
 			glm::mat4 V, IV;
 			glm::mat4 P, IP;
-			glm::mat4 PVM;
+			//glm::mat4 PVM;
 			glm::vec3 angle;
-			glm::vec3 translation;
+			//glm::vec3 translation;
 			
 			void reset();
 			void zoom(float amount);

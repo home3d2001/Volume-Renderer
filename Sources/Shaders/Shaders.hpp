@@ -8,6 +8,8 @@ namespace Shaders {
   extern ShaderProgram* pointProgram;
   extern ShaderProgram* lineProgram;
 	extern ShaderProgram* uniformColorProgram;
+	extern ShaderProgram* NonShaded2VBO;
+
   //extern ShaderProgram* sketchBoxProgram;
   void create();
 }

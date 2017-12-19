@@ -25,10 +25,13 @@ public:
 	GLuint ray_origin_id;
 	GLuint samples_id;
 	GLuint perturbation_id;
+	GLuint texmincoord_id;
+	GLuint texmaxcoord_id;
   GLuint pointSize_id;
   GLuint color_uniform_id;
 	GLuint texture0_id;
 	GLuint texture1_id;
+	GLuint texture2_id;
 	GLuint offset_uniform_id;
 	GLuint width_uniform_id;
 	GLuint height_uniform_id;

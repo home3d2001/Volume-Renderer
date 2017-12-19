@@ -15,6 +15,7 @@
 #include "Entities/SlicedVolume/SlicedVolume.hpp"
 #include "Entities/ImagePlane/ImagePlane.hpp"
 #include "GLUtilities/texture.hpp"
+#include "Entities/Box/Box.hpp"
 
 #include <thread>
 #include <atomic>
@@ -130,10 +131,9 @@ void render() {
 
 	shared_ptr<OrbitCamera> camera = 
 		dynamic_pointer_cast<OrbitCamera>(World.objects.at("Camera"));
-	shared_ptr<OrbitCamera> altCamera =
-		dynamic_pointer_cast<OrbitCamera>(World.objects.at("AltCamera"));
 	
 	glm::mat4 orthoproj = glm::ortho(-1, 1, -1, 1, -1, 1);
+
 
 	auto lastTime = glfwGetTime();
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window)) {
@@ -141,12 +141,10 @@ void render() {
 		if (currentTime - lastTime > 1.0 / framerate) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glfwPollEvents();
-			if (camera->id == camera->selected)
-				World.render(camera->VM, camera->P);
-			else if (altCamera->id == camera->selected) {
-				World.render(altCamera->VM, altCamera->P);
+			if (camera->id == camera->selected) {
+				World.render(camera->V, camera->P);
 			}
-
+			
 			Screen.render(orthoproj);
 			glfwSwapBuffers(GLUtilities::window);
 			lastTime = currentTime;
@@ -175,38 +173,39 @@ int main(int argc, char** argv) {
 		getchar();
 		return -1;
 	}
-	else
-		glfwShowWindow(window);
 	
+	glm::vec3 volumePosition = vec3(1.3, 0, 0);
+
 	/* Create Cameras*/
-	shared_ptr<OrbitCamera> camera = make_shared<OrbitCamera>(glm::vec3(0.0, 5.0, 0.0));
-	shared_ptr<OrbitCamera> altCamera = make_shared<OrbitCamera>(glm::vec3(0.0, 10.0, 0.0));
+	shared_ptr<OrbitCamera> camera = make_shared<OrbitCamera>(vec3(0, -5, 0), volumePosition);
 	camera->setWindowSize(GLUtilities::window_width, GLUtilities::window_height);
-	altCamera->setWindowSize(GLUtilities::window_width, GLUtilities::window_height);
 	
 	/* Create Transfer Function Editor */
 	shared_ptr<TransferFunctionGUI> TFGUI = 
 		make_shared<TransferFunctionGUI>(GLUtilities::window_width, GLUtilities::window_height, Options::bytesPerPixel);
 
 	/* Create Volume */
+	cout << "Initializing volume " << endl;
 	int3 dimensions = make_int3(Options::volumeWidth, Options::volumeHeight, Options::volumeDepth);
 	shared_ptr<RaycastVolume> raycastVolume = make_shared<RaycastVolume>(Options::volumeLocation, dimensions, 
 		Options::bytesPerPixel, camera, Options::totalSamples);
 	raycastVolume->transform.SetScale(glm::vec3(.5, .5, .5));
+	raycastVolume->transform.SetPosition(volumePosition);
 
 	/* Connect the volume with the GUI */
 	raycastVolume->setTransferFunction(TFGUI->getTransferFunction());
 	TFGUI->setHistogramTexture(raycastVolume->getHistogramTexture());
 	
 	/* Add entities to World and Screen */
+	World.add("Camera", camera);
 	Screen.add("TransferFunctionGUI", TFGUI);
 	World.add("Volume", raycastVolume);
-	World.add("Camera", camera);
-	World.add("AltCamera", altCamera);
 	
 	/* Handle scene evens on seperate thread */
 	thread updateThread = thread(update);
 	thread castRayThread = thread(castRay);
+
+	glfwShowWindow(window);
 
 	/* Render on the current thread */
 	render();

@@ -21,6 +21,10 @@ namespace Entities {
 		quat rotation = quat();
 		vec3 eulerAngles = vec3();
 		
+		vec3 worldForward = vec3(0.0, 1.0, 0.0);
+		vec3 worldRight = vec3(1.0, 0.0, 0.0);
+		vec3 worldUp = vec3(0.0, 0.0, 1.0);
+
 		vec3 forward = vec3(0.0, 1.0, 0.0);
 		vec3 right = vec3(1.0, 0.0, 0.0);
 		vec3 up = vec3(0.0, 0.0, 1.0);
@@ -139,7 +143,16 @@ namespace Entities {
 			Rotates the transform about the provided axis, passing through the provided point in parent coordinates by the provided angle in degrees.
 			This modifies both the position and rotation of the transform.
 		*/
-		void RotateAround(vec3 point, vec3 axis, float angle);
+		void RotateAround(vec3 point, vec3 axis, float angle) {
+			glm::vec3 direction = point - position;
+
+			position += direction;
+			rotation = glm::angleAxis(radians(-angle), axis) * rotation;
+			position -= direction * glm::inverse(glm::angleAxis(radians(-angle), axis));
+
+			UpdateRotation();
+			UpdatePosition();
+		}
 
 		void SetRotation(quat newRotation) {
 			rotation = newRotation;
@@ -152,8 +165,14 @@ namespace Entities {
 			UpdateRotation();
 		}
 		void UpdateRotation() {
+			auto rotationMatrix = glm::toMat4(rotation);
 			localToParentRotation = glm::toMat4(rotation);
-			parentToLocalRotation = glm::inverse(localToParentRotation.load());// glm::toMat4(glm::inverse(rotation));
+			parentToLocalRotation = glm::inverse(localToParentRotation.load());
+			
+			up = vec3(rotationMatrix * vec4(worldUp, 1.0));
+			forward = vec3(rotationMatrix * vec4(worldForward, 1.0));
+			right = glm::cross(up, forward);
+
 			UpdateMatrix();
 		}
 

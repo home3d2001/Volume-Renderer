@@ -7,19 +7,16 @@ namespace Entities {
 	int OrbitCamera::count = 0;
 	int OrbitCamera::selected = 0;
 
-	OrbitCamera::OrbitCamera(glm::vec3 initialPos, glm::quat initialRot) : Entity() {
+	OrbitCamera::OrbitCamera(glm::vec3 initialPos, glm::vec3 rotatePoint, glm::quat initialRot) : Entity() {
 		id = count;
 		count++;
 
-		forward = glm::vec3(0, 1, 0);
-		up = glm::vec3(0, 0, 1);
-		left = glm::vec3(1, 0, 0);
-		
+		transform.SetPosition(initialPos);
+		transform.SetRotation(initialRot);
+
 		this->initialPos = initialPos;
 		this->initialRot = initialRot;
-
-		translation = initialPos;
-		rotation = initialRot;
+		this->rotatePoint = rotatePoint;
 
 		fov = 45.f;
 		aspectRatio = 1.0f;
@@ -27,14 +24,13 @@ namespace Entities {
 		farClippingPlane = 100.f;
 		focalLength = 1.0 / tan(fov / 2.0);
 
-
 		angle = glm::vec3(0.0);
 		recalculate();
-		reset();
-
+		
 		updateVBO();
 		updateVAO();
 	}
+
 	void OrbitCamera::setWindowSize(int width, int height) {
 		float aspectRatio = width / (float)height;
 
@@ -42,47 +38,18 @@ namespace Entities {
 		if (aspectRatio > 0) {
 			this->windowSize = glm::vec2(width, height);
 			this->aspectRatio = aspectRatio;
+			recalculate();
 		}
 	}
-	glm::vec3 OrbitCamera::getForward() {
-		glm::mat4 IM = atomIM;
-		return glm::vec3(IM * glm::vec4(forward, 0.0));
-	}
-	glm::vec3 OrbitCamera::getLeft() {
-		glm::mat4 IM = atomIM;
-		return glm::vec3(IM * glm::vec4(left, 0.0));
-	}
-	glm::vec3 OrbitCamera::getUp() {
-		glm::mat4 IM = atomIM;
-		glm::mat4 RotationMatrix = glm::toMat4(rotation);
-		return glm::vec3(IM * glm::vec4(up, 0.0));
-	}
-	glm::vec3 OrbitCamera::getPosition() {
-		glm::mat4 IM = atomIM;
-		glm::mat4 IV = atomIV;
-		return glm::vec3(IM * IV * glm::vec4(0.0, 0.0, 0.0, 1.0));
-	}
+	
 	void OrbitCamera::recalculate() {
-		glm::mat4 RotationMatrix = glm::toMat4(rotation);
-
-		V = glm::lookAt(glm::vec3(0,0,0), forward, up);
-		IV = glm::inverse(V);
+		/* Construct object space lookat */
+		V = glm::lookAt(transform.position, transform.position + transform.forward, transform.up);
 		
-		transform.localToParentMatrix = glm::mat4(1.0);
-		transform.localToParentMatrix = glm::translate(transform.LocalToParentMatrix(), translation) * RotationMatrix;
-		IM = glm::inverse(transform.LocalToParentMatrix());
-
-		VM = V * transform.LocalToParentMatrix();
-		IVM = glm::inverse(VM);
-
+		/* Create perspective transformation */
 		P = glm::perspective(fov, aspectRatio, nearClippingPlane, farClippingPlane);
-		IP = glm::inverse(P);
-		
-		PVM = P * V * transform.LocalToParentMatrix();
-
-		atomIM = IM;
-		atomIV = IV;
 	}
+
 	void OrbitCamera::handleArrowKeys() {
 		float arrowSpeed = 10;
 		if (glfwGetKey(GLUtilities::window, GLFW_KEY_UP)) {
@@ -98,34 +65,34 @@ namespace Entities {
 			yawVelocity -= arrowSpeed * rotationAcceleration;
 		}
 	}
-	void OrbitCamera::handleMouse() {
-		/* GLFW doesn't give hold info, so we have to handle it ourselves here. */
-		/* GLFW also doesn't supply delta cursor position, so we compute it. */
+	//void OrbitCamera::handleMouse() {
+	//	/* GLFW doesn't give hold info, so we have to handle it ourselves here. */
+	//	/* GLFW also doesn't supply delta cursor position, so we compute it. */
 
-		if (glfwGetMouseButton(GLUtilities::window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-			if (!mousePrevPressed) {
-				glfwGetCursorPos(GLUtilities::window, &oldXPos, &oldYPos);
-				mousePrevPressed = true;
-			}
-			else {
-				glfwGetCursorPos(GLUtilities::window, &newXPos, &newYPos);
-				yawVelocity += (oldXPos - newXPos) * rotationAcceleration;
-				pitchVelocity += (oldYPos - newYPos) * rotationAcceleration;
-				oldXPos = newXPos;
-				oldYPos = newYPos;
-			}
-		}
-		if (glfwGetMouseButton(GLUtilities::window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
-			mousePrevPressed = false;
-		}
-	}
+	//	if (glfwGetMouseButton(GLUtilities::window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+	//		if (!mousePrevPressed) {
+	//			glfwGetCursorPos(GLUtilities::window, &oldXPos, &oldYPos);
+	//			mousePrevPressed = true;
+	//		}
+	//		else {
+	//			glfwGetCursorPos(GLUtilities::window, &newXPos, &newYPos);
+	//			yawVelocity += (oldXPos - newXPos) * rotationAcceleration;
+	//			pitchVelocity += (oldYPos - newYPos) * rotationAcceleration;
+	//			oldXPos = newXPos;
+	//			oldYPos = newYPos;
+	//		}
+	//	}
+	//	if (glfwGetMouseButton(GLUtilities::window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+	//		mousePrevPressed = false;
+	//	}
+	//}
 	void OrbitCamera::handleZoom() {
 		float arrowSpeed = 1;
 		if (glfwGetKey(GLUtilities::window, GLFW_KEY_MINUS)) {
-			zoomVelocity += arrowSpeed * zoomAcceleration;
+			zoomVelocity -= arrowSpeed * zoomAcceleration;
 		}
 		if (glfwGetKey(GLUtilities::window, GLFW_KEY_EQUAL)) {
-			zoomVelocity -= arrowSpeed * zoomAcceleration;
+			zoomVelocity += arrowSpeed * zoomAcceleration;
 		}
 	}
 	void OrbitCamera::handleReset() {
@@ -133,54 +100,49 @@ namespace Entities {
 			reset();
 		}
 	}
-	void OrbitCamera::handleCameraSwitch() {
+	/*void OrbitCamera::handleCameraSwitch() {
 		if (glfwGetKey(GLUtilities::window, GLFW_KEY_0)) {
 			selected = 0;
 		} else if (glfwGetKey(GLUtilities::window, GLFW_KEY_1)) {
 			selected = 1;
 		}
-	}
+	}*/
 	void OrbitCamera::raycast(glm::vec4 point, glm::vec4 direction) {
-		/* Don't update unselected cameras */
-		if (id != selected) return;
-		
-		handleMouse();
+		///* Don't update unselected cameras */
+		//if (id != selected) return;
+		//
+		//handleMouse();
 	}
 	void OrbitCamera::update() {
 		/* Don't update unselected cameras */
 		if (id != selected) return;
 
-		handleCameraSwitch();
+
+	//	handleCameraSwitch();
 		handleArrowKeys();
-	//	handleMouse();
+	////	handleMouse();
 		handleZoom();
 		handleReset();
 
-
-
-	//	transform.RotateAround(target.transform.position, transform.right, pitchAmount);
-	//	transform.RotateAround(target.transform.position, transform.up, yawAmount);
 
 
 
 		zoomVelocity -= zoomVelocity* zoomResistance;
 		yawVelocity -= yawVelocity * rotateResistance;
 		pitchVelocity -= pitchVelocity * rotateResistance;
-		translation += forward * zoomVelocity;
+		transform.AddPosition(glm::normalize(rotatePoint - transform.position) * zoomVelocity);
 
-		glm::vec3 currentLeft = left * rotation;
-		glm::vec3 currentUp = up * rotation;
-
-		rotation *= glm::angleAxis(glm::radians(-pitchVelocity), currentLeft);
-		rotation *= glm::angleAxis(glm::radians(-yawVelocity), currentUp);
-
+		glm::vec3 currentRight = transform.right;
+		glm::vec3 currentUp = transform.up;
+		
+		transform.RotateAround(rotatePoint, currentRight, pitchVelocity);
+		transform.RotateAround(rotatePoint, -currentUp, yawVelocity);
 		
 		recalculate();
-
 	}
 	void OrbitCamera::reset() {
-		translation = initialPos;
-		rotation = initialRot;
+		transform.SetPosition(initialPos);
+		transform.SetRotation(initialRot);
 		pitchVelocity = yawVelocity = 0;
 		zoomVelocity = 0;
 	}
@@ -191,7 +153,7 @@ namespace Entities {
 		//position += (amount * magnitude) * direction;
 	}
 	void OrbitCamera::updateVBO() {
-		float data[8] = {
+		/*float data[8] = {
 			0.0f, 0.0f, 0.0f, 1.0f,
 			0.0f, 0.0f, 1.0f, 1.0f
 		};
@@ -199,9 +161,10 @@ namespace Entities {
 		glGenBuffers(1, &VBO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8, data, GL_STATIC_DRAW);
+		print_gl_error();*/
 	}
 	void OrbitCamera::updateVAO() {
-		glDeleteVertexArrays(1, &VAO);
+		/*glDeleteVertexArrays(1, &VAO);
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -212,32 +175,34 @@ namespace Entities {
 			GL_FLOAT, GL_FALSE, sizeof(float4), 0);
 		glVertexAttribPointer(Shaders::pointProgram->color_id, 4,
 			GL_FLOAT, GL_FALSE, sizeof(float4), (void*)(sizeof(float4)));
+		print_gl_error();*/
+
 	}
 	void OrbitCamera::render(glm::mat4 parent_matrix, glm::mat4 projection) {
-		if (id != selected && visible) {
-			glm::mat4 finalMatrix = projection * parent_matrix * IM * IV;
+		//if (id != selected && visible) {
+		//	glm::mat4 finalMatrix = projection * parent_matrix * IM * IV;
 
-			glEnable(GL_LINE_SMOOTH);
-			glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-			//print_gl_error();
+		//	glEnable(GL_LINE_SMOOTH);
+		//	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+		//	//print_gl_error();
 
-			Shaders::pointProgram->use();
-			glBindVertexArray(VAO);
-			//print_gl_error();
+		//	Shaders::pointProgram->use();
+		//	glBindVertexArray(VAO);
+		//	//print_gl_error();
 
-			glBindBuffer(GL_ARRAY_BUFFER, VBO);
-			//print_gl_error();
+		//	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		//	//print_gl_error();
 
-			glUniformMatrix4fv(
-				Shaders::pointProgram->matrix_id, 1, 0, &(finalMatrix[0].x));
-			//print_gl_error();
+		//	glUniformMatrix4fv(
+		//		Shaders::pointProgram->matrix_id, 1, 0, &(finalMatrix[0].x));
+		//	//print_gl_error();
 
-			glUniform1f(Shaders::pointProgram->pointSize_id, 10.0);
-			//print_gl_error();
-			glLineWidth(4.);
-			glDrawArrays(GL_POINTS, 0, 1);
-			//print_gl_error();
-			glBindVertexArray(0);
-		}
+		//	glUniform1f(Shaders::pointProgram->pointSize_id, 10.0);
+		//	//print_gl_error();
+		//	glLineWidth(4.);
+		//	glDrawArrays(GL_POINTS, 0, 1);
+		//	//print_gl_error();
+		//	glBindVertexArray(0);
+		//}
 	}
 }

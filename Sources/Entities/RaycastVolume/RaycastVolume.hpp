@@ -4,6 +4,7 @@
 #include "Entities/Entity.h"
 #include "Entities/Cameras/OrbitCamera.h"
 #include "Entities/ImagePlane/ImagePlane.hpp"
+#include "Entities/Box/Box.hpp"
 #include "RaycastVolume.h"
 #include "Vector/vec.h"
 using namespace GLUtilities;
@@ -17,11 +18,11 @@ namespace Entities {
 		void render(glm::mat4 parent_matrix, glm::mat4 projection);
 		void handleKeys();
 		std::string filename;
+		void computeGradientMagnitudeVolume();
 		void computeHistogram();
-
 		void computeHistogram8();
-
 		void computeHistogram16();
+		void compute2DHistogram();
 
 		void setTransferFunction(std::shared_ptr<Texture> transferFunction);
 		std::shared_ptr<Texture> getHistogramTexture();
@@ -42,17 +43,23 @@ namespace Entities {
 		bool interpolate = true;
 		bool hide = false;
 
+		std::shared_ptr<Box> bb;
+
 		int samples;
 		bool perturbation = false;
 		int3 rawDimensions;
 		shared_ptr<OrbitCamera> camera;
 		
+		glm::vec2 minTransferFunctionCoord = glm::vec2(0, 0);
+		glm::vec2 maxTransferFunctionCoord = glm::vec2(0, 0);
 		std::shared_ptr<Texture> transferFunction;
 		std::shared_ptr<Texture> histogramTexture;
 
-		vector<GLubyte> pVolume;
+		vector<GLubyte> volume;
+		vector<GLfloat> gradientMagnitudeVolume;
 
-		GLuint textureID;
+		GLuint volumeTextureID;
+		GLuint gradientTextureID;
 		void updateImage(string filename, int3 rawDimensions, int bytesPerPixel);
 	};
 }

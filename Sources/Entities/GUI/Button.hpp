@@ -14,6 +14,7 @@ namespace Entities {
 		std::shared_ptr<Box> box;
 		bool activatable = false;
 		bool clicked = false;
+		bool held = false;
 		bool active = false;
 		void raycast(glm::vec4 p, glm::vec4 d);
 	};

@@ -25,12 +25,15 @@ void ShaderProgram::getUniforms() {
 	color_uniform_id = glGetUniformLocation(program, "color");
 	texture0_id = glGetUniformLocation(program, "texture0");
 	texture1_id = glGetUniformLocation(program, "texture1");
+	texture2_id = glGetUniformLocation(program, "texture2");
 	offset_uniform_id = glGetUniformLocation(program, "u_offset");
 	width_uniform_id = glGetUniformLocation(program, "width");
 	height_uniform_id = glGetUniformLocation(program, "height");
 	window_size_id = glGetUniformLocation(program, "window_size");
 	samples_id = glGetUniformLocation(program, "samples");
 	perturbation_id = glGetUniformLocation(program, "perturbation");
+	texmincoord_id = glGetUniformLocation(program, "texmincoord");
+	texmaxcoord_id = glGetUniformLocation(program, "texmaxcoord");
 }
 
 void ShaderProgram::use() {
